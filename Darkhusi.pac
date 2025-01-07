@@ -1,6 +1,6 @@
 function FindProxyForURL(url, host)
 {
-if (host === "127.0.0.1" && (url.indexOf(":5000") !== -1 || url.indexOf(":8888") !== -1))
+  if (host === "127.0.0.1" && (url.indexOf(":5000") !== -1 || url.indexOf(":8888") !== -1))
   {   
     return "DIRECT";
   }
