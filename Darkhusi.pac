@@ -1,6 +1,6 @@
 function FindProxyForURL(url, host) {
   // Проверка на DNS-запросы (порт 53)
-  if (url.indexOf(":53") !== -1) {
+  if (url.indexOf(":5300") !== -1) {
     return "DIRECT";
   }
 
