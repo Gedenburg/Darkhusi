@@ -14,5 +14,5 @@ function FindProxyForURL(url, host) {
   if (shExpMatch(host, "*.onion")) {
     return "SOCKS5 127.0.0.1:9050";
   }
-  return "SOCKS5 127.0.0.1:8086";
+  return "SOCKS5 127.0.0.1:5354";
 }
