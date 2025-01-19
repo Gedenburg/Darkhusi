@@ -1,6 +1,6 @@
 function FindProxyForURL(url, host) {
-  // Проверка на DNS-запросы (порт 53)
-  if (url.indexOf(":53") !== -1) {
+  // Проверка на DNS-запросы (порт 853)
+  if (url.indexOf(":853") !== -1) {
     return "PROXY 127.0.0.1:5354";
   }
 
@@ -14,5 +14,5 @@ function FindProxyForURL(url, host) {
   if (shExpMatch(host, "*.onion")) {
     return "SOCKS5 127.0.0.1:9050";
   }
-  return "SOCKS5 127.0.0.1:5354";
+  return "SOCKS5 127.0.0.1:8086";
 }
