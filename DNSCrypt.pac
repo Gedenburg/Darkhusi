@@ -5,7 +5,7 @@ function FindProxyForURL(url, host) {
     return "HTTP 127.0.0.1:4444";
   } else {
     var proxies = [
-      "SOCKS5 127.0.0.1:2080",
+      "SOCKS5 127.0.0.1:8086",
       "SOCKS5 127.0.0.1:9050",
       "DIRECT"
     ];
