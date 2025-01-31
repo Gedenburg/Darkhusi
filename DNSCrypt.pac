@@ -37,9 +37,6 @@ function FindProxyForURL(url, host) {
     var proxy = getWorkingProxy();  // Получаем рабочий прокси
     return proxy;
   }
-
-  // Если не в Google или DuckDuckGo, возвращаем прямой доступ
-  return "DIRECT";
 }
 
 // Функция для цикличной попытки подключения к рабочему прокси
