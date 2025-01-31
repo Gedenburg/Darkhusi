@@ -16,7 +16,7 @@ function FindProxyForURL(url, host) {
 
   // Если посещаем 127.0.0.1:8888, проверяем состояние WireGuard
   if (host == "127.0.0.1" && url.indexOf(":8888") != -1) {
-    // Проверяем, запущен ли WireGuard через resolvable имя wireguard.local
+    // Проверяем, запущен ли WireGuard
     if (isWireGuardRunning()) {
       return "SOCKS5 127.0.0.1:8086"; // Используем WireGuard
     } else {
@@ -34,13 +34,14 @@ function FindProxyForURL(url, host) {
   return "DIRECT";
 }
 
-// Функция для проверки, запущен ли WireGuard через resolvable имя wireguard.local
+// Функция для проверки, запущен ли WireGuard
 function isWireGuardRunning() {
   try {
-    // Проверяем, можно ли разрешить имя wireguard.local
-    var ip = dnsResolve("wireguard.local");
-    return ip != null; // Если имя разрешено, значит WireGuard запущен
+    var sock = new Socket();
+    sock.connect("127.0.0.1", 8086); // Пример подключения к WireGuard порту
+    sock.close();
+    return true; // Если подключение прошло успешно, значит WireGuard работает
   } catch (e) {
-    return false; // Если разрешение не удалось, значит WireGuard не запущен
+    return false; // Если подключение не удалось, значит WireGuard не работает
   }
 }
