@@ -1,53 +1,62 @@
-var proxyMode = "DIRECT"; // Начинаем с прямого режима
+var usingDuckDuckGo = false;  // Флаг для отслеживания посещения DuckDuckGo
+var usingBrave = false;  // Флаг для отслеживания посещения Brave Search
 
 function FindProxyForURL(url, host) {
-    // Если посещаем DuckDuckGo, отключаем прокси для всего трафика
-    if (shExpMatch(host, "*duckduckgo.com")) {
-        proxyMode = "DIRECT";
-        return "DIRECT";
-    }
+  // Если посещаем DuckDuckGo, сбрасываем флаг для Brave
+  if (shExpMatch(url, "*duckduckgo.com*") || shExpMatch(host, "*duckduckgo.com*")) {
+    usingDuckDuckGo = true;  // Устанавливаем флаг, что мы в DuckDuckGo
+    usingBrave = false;  // Сбрасываем флаг для Brave
+    return "DIRECT";  // Прямой доступ для всего
+  }
 
-    // Если посещаем SearXNG, включаем прокси, но сам он идет напрямую
-    if (shExpMatch(url, "http://127.0.0.1:8888*") || shExpMatch(host, "127.0.0.1")) {
-        proxyMode = "PROXY";
-        return "DIRECT"; // Исключаем SearXNG из проксирования
-    }
+  // Если посещаем Brave Search, сбрасываем флаг для DuckDuckGo
+  if (shExpMatch(url, "*search.brave.com*") || shExpMatch(host, "*search.brave.com*")) {
+    usingBrave = true;  // Устанавливаем флаг, что мы в Brave
+    usingDuckDuckGo = false;  // Сбрасываем флаг для DuckDuckGo
+    var proxy = getWorkingProxy();  // Получаем рабочий прокси для Brave
+    return proxy;  // Возвращаем прокси
+  }
 
-    // Onion и I2P всегда через соответствующие прокси
-    if (shExpMatch(url, "*.onion*") || shExpMatch(host, "*.onion")) {
-        return "SOCKS5 127.0.0.1:9050";
+  // Если это Onion или i2p, всегда используем Tor
+  if (shExpMatch(url, "onion:*") || shExpMatch(url, "i2p:*")) {
+    if (shExpMatch(url, "onion:*")) {
+      return "SOCKS5 127.0.0.1:9050";  // Используем Tor для .onion
+    } else if (shExpMatch(url, "i2p:*")) {
+      return "HTTP 127.0.0.1:4444";  // Используем I2P для .i2p
     }
-    if (shExpMatch(url, "*.i2p*") || shExpMatch(host, "*.i2p")) {
-        return "HTTP 127.0.0.1:4444";
-    }
+  }
 
-    // Если включен режим прокси, направляем через WireGuard или Tor
-    if (proxyMode === "PROXY") {
-        return getWorkingProxy();
-    }
+  // Если мы в Brave, проксируем весь трафик
+  if (usingBrave) {
+    var proxy = getWorkingProxy();  // Получаем рабочий прокси
+    return proxy;
+  }
 
-    // По умолчанию — прямой доступ
-    return "DIRECT";
+  // Если не в DuckDuckGo или Brave, возвращаем прямой доступ
+  return "DIRECT";
 }
 
-// Функция выбора рабочего прокси
+// Функция для цикличной попытки подключения к рабочему прокси
 function getWorkingProxy() {
-    var proxies = [
-        "SOCKS5 127.0.0.1:8086",  // WireGuard
-        "SOCKS5 127.0.0.1:9050"   // Tor
-    ];
+  var proxies = [
+    "SOCKS5 127.0.0.1:8086",  // WireGuard
+    "SOCKS5 127.0.0.1:9050",  // Tor
+  ];
 
-    for (var i = 0; i < proxies.length; i++) {
-        if (proxyAvailable(proxies[i])) {
-            return proxies[i];
-        }
+  // Пробуем прокси по очереди
+  for (var i = 0; i < proxies.length; i++) {
+    var proxy = proxies[i];
+    // Проверка доступности прокси (здесь всегда считаем, что он доступен)
+    if (proxyAvailable(proxy)) {
+      return proxy;  // Возвращаем рабочий прокси
     }
+  }
 
-    // Если ничего не работает, пробуем Tor по умолчанию
-    return "SOCKS5 127.0.0.1:9050";
+  // Если ни один прокси не работает, используем Tor
+  return "SOCKS5 127.0.0.1:9050";  // Используем Tor по умолчанию
 }
 
-// Функция проверки доступности прокси (заглушка, всегда true)
+// Функция для проверки доступности прокси
 function proxyAvailable(proxy) {
-    return true;
+  return true;  // В этом примере всегда считаем, что прокси доступен
 }
