@@ -1,4 +1,6 @@
 function FindProxyForURL(url, host) {
+if (host == "127.0.0.1" && url.indexOf(":8888") != -1) {
+    return "SOCKS5 127.0.0.1:8086";
   if (shExpMatch(url, "onion:*") || shExpMatch(host, "*.onion")) {
     return "SOCKS5 127.0.0.1:9050";
   }
