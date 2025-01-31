@@ -1,16 +1,16 @@
-var useProxy = false;  // Флаг использования прокси
+var proxyMode = "DIRECT"; // Начинаем с прямого режима
 
 function FindProxyForURL(url, host) {
-    // Если посещаем DuckDuckGo, отключаем прокси
+    // Если посещаем DuckDuckGo, отключаем прокси для всего трафика
     if (shExpMatch(host, "*duckduckgo.com")) {
-        useProxy = false;
+        proxyMode = "DIRECT";
         return "DIRECT";
     }
 
     // Если посещаем SearXNG, включаем прокси, но сам он идет напрямую
     if (shExpMatch(url, "http://127.0.0.1:8888*") || shExpMatch(host, "127.0.0.1")) {
-        useProxy = true;
-        return "DIRECT";
+        proxyMode = "PROXY";
+        return "DIRECT"; // Исключаем SearXNG из проксирования
     }
 
     // Onion и I2P всегда через соответствующие прокси
@@ -21,8 +21,8 @@ function FindProxyForURL(url, host) {
         return "HTTP 127.0.0.1:4444";
     }
 
-    // Если активирован режим прокси, используем WireGuard или Tor
-    if (useProxy) {
+    // Если включен режим прокси, направляем через WireGuard или Tor
+    if (proxyMode === "PROXY") {
         return getWorkingProxy();
     }
 
