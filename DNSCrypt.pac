@@ -4,44 +4,41 @@ function FindProxyForURL(url, host) {
   // Если это запрос к поиску Google (например, www.google.com), сбрасываем прокси на прямой доступ
   if (shExpMatch(url, "https://www.google.com/*") || shExpMatch(url, "http://www.google.com/*")) {
     usingProxy = false;  // После посещения Google переключаем на прямой доступ
+    return "DIRECT";
   }
 
-  // Если это запрос к .onion или .i2p сайтам, используем Tor/I2P
-  if (shExpMatch(url, "*.onion") || shExpMatch(host, "*.onion")) {
-    return "SOCKS5 127.0.0.1:9050";
-  }
-  if (shExpMatch(url, "*.i2p") || shExpMatch(host, "*.i2p")) {
-    return "HTTP 127.0.0.1:4444";
-  }
-
-  // Если посещаем 127.0.0.1:8888, проверяем состояние WireGuard
-  if (host == "127.0.0.1" && url.indexOf(":8888") != -1) {
-    // Проверяем, запущен ли WireGuard
+  // Если это запрос к DuckDuckGo (например, duckduckgo.com), пробуем использовать прокси
+  if (shExpMatch(url, "*duckduckgo.com*") || shExpMatch(host, "*duckduckgo.com*")) {
+    // Если WireGuard запущен, используем прокси через WireGuard (127.0.0.1:8086)
     if (isWireGuardRunning()) {
-      return "SOCKS5 127.0.0.1:8086"; // Используем WireGuard
+      return "SOCKS5 127.0.0.1:8086";  // Используем WireGuard
     } else {
-      // Пробуем подключиться через Tor, если WireGuard не запущен
-      return "SOCKS5 127.0.0.1:9050"; // Используем Tor
+      // Если WireGuard не запущен, используем Tor (127.0.0.1:9050)
+      return "SOCKS5 127.0.0.1:9050";  // Используем Tor
     }
   }
 
-  // Если флаг прокси включен, используем прокси для всех остальных сайтов
+  // Если URL начинается с onion: или i2p:, всегда используем Tor или i2p прокси
+  if (shExpMatch(url, "onion:*") || shExpMatch(url, "i2p:*")) {
+    return "SOCKS5 127.0.0.1:9050";  // Используем Tor для .onion и .i2p
+  }
+
+  // Для всех остальных сайтов, если флаг прокси включен, используем прокси через WireGuard
   if (usingProxy) {
-    return "SOCKS5 127.0.0.1:8086";  // Используем основной прокси
+    return "SOCKS5 127.0.0.1:8086";  // Используем основной прокси (WireGuard)
   }
 
   // Прямой доступ для всех остальных сайтов
   return "DIRECT";
 }
 
-// Функция для проверки, запущен ли WireGuard
+// Функция для проверки, запущен ли WireGuard через resolvable имя wireguard.local
 function isWireGuardRunning() {
   try {
-    var sock = new Socket();
-    sock.connect("127.0.0.1", 8086); // Пример подключения к WireGuard порту
-    sock.close();
-    return true; // Если подключение прошло успешно, значит WireGuard работает
+    // Проверяем, можно ли разрешить имя wireguard.local
+    var ip = dnsResolve("wireguard.local");
+    return ip != null; // Если имя разрешено, значит WireGuard запущен
   } catch (e) {
-    return false; // Если подключение не удалось, значит WireGuard не работает
+    return false; // Если разрешение не удалось, значит WireGuard не запущен
   }
 }
