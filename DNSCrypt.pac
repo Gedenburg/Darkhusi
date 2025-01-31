@@ -2,29 +2,23 @@ var usingGoogle = false;  // Флаг для отслеживания посещ
 var usingDuckDuckGo = false;  // Флаг для отслеживания посещения DuckDuckGo
 
 function FindProxyForURL(url, host) {
-  // Проверка на посещение Google
+  // Если посещаем Google, сбрасываем флаг для DuckDuckGo
   if (shExpMatch(url, "https://www.google.com/*") || shExpMatch(url, "http://www.google.com/*")) {
-    usingGoogle = true;  // Установим флаг, что мы в Google
-    usingDuckDuckGo = false;  // Выключаем флаг для DuckDuckGo
+    usingGoogle = true;  // Устанавливаем флаг, что мы в Google
+    usingDuckDuckGo = false;  // Сбрасываем флаг для DuckDuckGo
     return "DIRECT";  // Прямой доступ для всего
   }
 
-  // Если мы в Google, всегда прямой доступ
-  if (usingGoogle) {
-    return "DIRECT";  // Прямой доступ для всех сайтов
-  }
-
-  // Проверка на посещение DuckDuckGo
+  // Если посещаем DuckDuckGo, сбрасываем флаг для Google
   if (shExpMatch(url, "*duckduckgo.com*") || shExpMatch(host, "*duckduckgo.com*")) {
-    usingDuckDuckGo = true;  // Установим флаг, что мы в DuckDuckGo
-    usingGoogle = false;  // Выключаем флаг для Google
+    usingDuckDuckGo = true;  // Устанавливаем флаг, что мы в DuckDuckGo
+    usingGoogle = false;  // Сбрасываем флаг для Google
     var proxy = getWorkingProxy();  // Получаем рабочий прокси для DuckDuckGo
     return proxy;  // Возвращаем прокси
   }
 
-  // Если это Onion, всегда используем Tor
+  // Если это Onion или i2p, всегда используем Tor
   if (shExpMatch(url, "onion:*") || shExpMatch(url, "i2p:*")) {
-    // Для onion используем Tor, для i2p используем HTTP 127.0.0.1:4444
     if (shExpMatch(url, "onion:*")) {
       return "SOCKS5 127.0.0.1:9050";  // Используем Tor для .onion
     } else if (shExpMatch(url, "i2p:*")) {
@@ -37,6 +31,9 @@ function FindProxyForURL(url, host) {
     var proxy = getWorkingProxy();  // Получаем рабочий прокси
     return proxy;
   }
+
+  // Если не в Google или DuckDuckGo, возвращаем прямой доступ
+  return "DIRECT";
 }
 
 // Функция для цикличной попытки подключения к рабочему прокси
