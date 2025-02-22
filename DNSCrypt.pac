@@ -13,6 +13,7 @@ function FindProxyForURL(url, host) {
         "lenta.ru",         // Лента.ру
         "rbc.ru",           // РБК
         "rambler.ru",
+        "dzen.ru",
         "truthsocial.com",  //Трамп мать его
         // Новые домены, предположительно добавленные позже (нуждаются в проверке)
         "telegram.org",     // Возможные ограничения на отдельные ресурсы
