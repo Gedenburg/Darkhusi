@@ -1,62 +1,31 @@
-var usingDuckDuckGo = false;  // Флаг для отслеживания посещения DuckDuckGo
-var usingBrave = false;  // Флаг для отслеживания посещения Brave Search
-
 function FindProxyForURL(url, host) {
-  // Если посещаем DuckDuckGo, сбрасываем флаг для Brave
-  if (shExpMatch(url, "*duckduckgo.com*") || shExpMatch(host, "*duckduckgo.com*")) {
-    usingDuckDuckGo = true;  // Устанавливаем флаг, что мы в DuckDuckGo
-    usingBrave = false;  // Сбрасываем флаг для Brave
-    return "DIRECT";  // Прямой доступ для всего
-  }
+    // Список доменов, заблокированных в Украине (на основе известных данных до 2023 года и предположений на 2025)
+    var blockedSites = [
+        "vk.com",           // ВКонтакте
+        "ok.ru",            // Одноклассники
+        "yandex.ru",        // Яндекс
+        "yandex.ua",
+        "mail.ru",          // Mail.ru
+        "kaspersky.ru",     // Лаборатория Касперского
+        "kaspersky.ua",
+        "rt.com",           // Russia Today
+        "ria.ru",           // РИА Новости
+        "lenta.ru",         // Лента.ру
+        "rbc.ru",           // РБК
+        // Новые домены, предположительно добавленные позже (нуждаются в проверке)
+        "telegram.org",     // Возможные ограничения на отдельные ресурсы
+        "livejournal.com",  // ЖЖ (блокировался в 2021)
+        "github.com",       // Блокировка отдельных страниц в прошлом
+        // Добавьте сюда другие домены из актуального реестра
+    ];
 
-  // Если посещаем Brave Search, сбрасываем флаг для DuckDuckGo
-  if (shExpMatch(url, "*search.brave.com*") || shExpMatch(host, "*search.brave.com*")) {
-    usingBrave = true;  // Устанавливаем флаг, что мы в Brave
-    usingDuckDuckGo = false;  // Сбрасываем флаг для DuckDuckGo
-    var proxy = getWorkingProxy();  // Получаем рабочий прокси для Brave
-    return proxy;  // Возвращаем прокси
-  }
-
-  // Если это Onion или i2p, всегда используем Tor
-  if (shExpMatch(url, "onion:*") || shExpMatch(url, "i2p:*")) {
-    if (shExpMatch(url, "onion:*")) {
-      return "SOCKS5 127.0.0.1:9050";  // Используем Tor для .onion
-    } else if (shExpMatch(url, "i2p:*")) {
-      return "HTTP 127.0.0.1:4444";  // Используем I2P для .i2p
+    // Проверяем, является ли хост одним из заблокированных
+    for (var i = 0; i < blockedSites.length; i++) {
+        if (dnsDomainIs(host, blockedSites[i])) {
+            return "SOCKS5 127.0.0.1:8086";
+        }
     }
-  }
 
-  // Если мы в Brave, проксируем весь трафик
-  if (usingBrave) {
-    var proxy = getWorkingProxy();  // Получаем рабочий прокси
-    return proxy;
-  }
-
-  // Если не в DuckDuckGo или Brave, возвращаем прямой доступ
-  return "DIRECT";
-}
-
-// Функция для цикличной попытки подключения к рабочему прокси
-function getWorkingProxy() {
-  var proxies = [
-    "SOCKS5 127.0.0.1:8086",  // WireGuard
-    "SOCKS5 127.0.0.1:9050",  // Tor
-  ];
-
-  // Пробуем прокси по очереди
-  for (var i = 0; i < proxies.length; i++) {
-    var proxy = proxies[i];
-    // Проверка доступности прокси (здесь всегда считаем, что он доступен)
-    if (proxyAvailable(proxy)) {
-      return proxy;  // Возвращаем рабочий прокси
-    }
-  }
-
-  // Если ни один прокси не работает, используем Tor
-  return "SOCKS5 127.0.0.1:9050";  // Используем Tor по умолчанию
-}
-
-// Функция для проверки доступности прокси
-function proxyAvailable(proxy) {
-  return true;  // В этом примере всегда считаем, что прокси доступен
+    // Для всех остальных сайтов — прямое соединение
+    return "DIRECT";
 }
