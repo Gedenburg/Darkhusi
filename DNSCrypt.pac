@@ -14,7 +14,7 @@ function FindProxyForURL(url, host) {
         "rbc.ru",           // РБК
         "rambler.ru",
         "dzen.ru",
-        "www.xnxx-ru.com",
+        "www.xnxx-ru.com",   //порно
         "truthsocial.com",  //Трамп мать его
         // Новые домены, предположительно добавленные позже (нуждаются в проверке)
         "telegram.org",     // Возможные ограничения на отдельные ресурсы
